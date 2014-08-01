@@ -1,0 +1,13 @@
+* clj-dtl
+
+Basic job UI for Syncsort DTL private experiment
+
+** Prerequisites
+
+Go.js
+
+** Running
+
+** License
+
+Copyright © 2014 NOTREALLY
