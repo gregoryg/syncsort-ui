@@ -3,9 +3,10 @@
 <head>
   <title>Mapping Fields of Records</title>
   <!-- Copyright 1998-2014 by Northwoods Software Corporation. -->
-  <script src="go.js"></script>
-  <link href="../assets/css/goSamples.css" rel="stylesheet" type="text/css" />  <!-- you don't need to use this -->
-  <script src="goSamples.js"></script>  <!-- this is only for the GoJS Samples framework -->
+  <script src="../js/jquery-1.11.1.js"></script>
+  <script src="../js/go.js"></script>
+  <link href="../css/goSamples.css" rel="stylesheet" type="text/css" />  <!-- you don't need to use this -->
+  <script src="../js/goSamples.js"></script>  <!-- this is only for the GoJS Samples framework -->
   <script id="code">
 function init() {
     if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
@@ -86,63 +87,79 @@ function init() {
           $(go.Shape, { toArrow: "Standard", stroke: null })
          );
 
+    var nodeDataArray, linkDataArray;
+	jQuery.ajaxSetup({ async: false});
+	jQuery.getJSON("http://lemoncheeks:3000/dtl/node-data-array", "",
+		       function (data, str) {
+			   nodeDataArray = data;
+		       }
+		      );
+	jQuery.getJSON("http://lemoncheeks:3000/dtl/link-data-array", "",
+		       function (data, str) {
+			   linkDataArray = data;
+		       }
+		      );
+	jQuery.ajaxSetup({ async: true});
+
     myDiagram.model =
         $(go.GraphLinksModel,
           { linkFromPortIdProperty: "fromPort",
             linkToPortIdProperty: "toPort",
-            nodeDataArray: [
-		{ key: "mapper", text: "mapper logic", color: "blue", isGroup: true},
-		{ key: "reducer", text: "reducer logic", color: "red", isGroup: true},
-		{ key: "M10-read-weblogs.dtl",
-                  fields: [
-                      { name: "infile1", info: "${APACHE_WEBLOGS_DIR}/SAMPLE-access_1.log", color: "#F7B84B", figure: "Ellipse" },
-                      { name: "outfile1", info: "sorted-logs.dat", color: "#F25022", figure: "Ellipse" },
-                      // { name: "fieldThree", info: "3rd", color: "#00BCF2" }
-		  ],
-		  group: "mapper"
-                  // loc: "0 0"
-		},
-		{ key: "M20-pre-sessionize.dtl",
-                  fields: [
-                      { name: "infile2", info: "sorted-logs.dat",       color: "#FFB900", figure: "Diamond" },
-                      { name: "outfile2", info: "mapper-20-out.dat",       color: "#F25022", figure: "Rectangle" }
-                      // { name: "fieldC", info: "",       color: "#7FBA00", figure: "Diamond" },
-                      // { name: "fieldD", info: "fourth", color: "#00BCF2",  figure: "Rectangle" }
-                  ],
-		  group: "mapper"
-                  // loc: "250 0"
-		},
-		{ key: "M30-combiner.dtl",
-		  fields: [
-		      {name: "infile3", info: "mapper-20-out.dat", color: "#FFB900", figure: "Diamond"},
-		      {name: "outfile3", info: "mapper-30.dat", color: "#F25022", figure: "Rectangle"}
-		  ],
-		  group: "mapper"
-		},
-		{ key: "M90-sort-by-partition.dtl",
-		  fields: [
-		      {name: "infile4", info: "mapper-30.dat", color: "#FFB900", figure: "Diamond"},
-		      {name: "outfile4", info: "sorted-logs-by-partition.dat", color: "#F25022", figure: "Rectangle"}
-		  ],
-		  group: "mapper"
-		},
-		{ key: "R10-sessionize-weblogs.dtl",
-		  fields: [
-		      {name: "infile5", info: "sorted-logs-by-partition.dat", color: "#FFB900", figure: "Diamond"},
-		      {name: "outfile5", info: "sessionized-weblogs.dat", color: "#F25022", figure: "Rectangle"}
-		  ],
-		  group: "reducer"
-		}
-	    ],
-            linkDataArray: [
-		// { from: "M10-read-weblogs.dtl", fromPort: "infile1", to: "M20-pre-sessionize.dtl", toPort: "infile2" },
-		{ from: "M10-read-weblogs.dtl", fromPort: "outfile1", to: "M20-pre-sessionize.dtl", toPort: "fieldD" },
-		{from: "M20-pre-sessionize.dtl", fromPort: "outfile2", to: "M30-combiner.dtl", toPort: "infile3" },
-		{from: "M30-combiner.dtl", fromPort: "outfile3", to: "M90-sort-by-partition.dtl", toPort: "infile4" },
-		{from: "M90-sort-by-partition.dtl", fromPort: "outfile4", to: "R10-sessionize-weblogs.dtl", toPort: "infile5" }
+	    nodeDataArray: nodeDataArray,
+	    linkDataArray: linkDataArray,
+            // nodeDataArray: [
+	    // 	{ key: "mapper", text: "mapper logic", color: "blue", isGroup: true},
+	    // 	{ key: "reducer", text: "reducer logic", color: "red", isGroup: true},
+	    // 	{ key: "M10-read-weblogs.dtl",
+            //       fields: [
+            //           { name: "infile1", info: "SAMPLE-access_1.log", color: "#F7B84B", figure: "Ellipse" },
+            //           { name: "outfile1", info: "sorted-logs.dat", color: "#F25022", figure: "Ellipse" },
+            //           // { name: "fieldThree", info: "3rd", color: "#00BCF2" }
+	    // 	  ],
+	    // 	  group: "mapper"
+            //       // loc: "0 0"
+	    // 	},
+	    // 	{ key: "M20-pre-sessionize.dtl",
+            //       fields: [
+            //           { name: "infile2", info: "sorted-logs.dat",       color: "#FFB900", figure: "Diamond" },
+            //           { name: "outfile2", info: "mapper-20-out.dat",       color: "#F25022", figure: "Rectangle" }
+            //           // { name: "fieldC", info: "",       color: "#7FBA00", figure: "Diamond" },
+            //           // { name: "fieldD", info: "fourth", color: "#00BCF2",  figure: "Rectangle" }
+            //       ],
+	    // 	  group: "mapper"
+            //       // loc: "250 0"
+	    // 	},
+	    // 	{ key: "M30-combiner.dtl",
+	    // 	  fields: [
+	    // 	      {name: "infile3", info: "mapper-20-out.dat", color: "#FFB900", figure: "Diamond"},
+	    // 	      {name: "outfile3", info: "mapper-30.dat", color: "#F25022", figure: "Rectangle"}
+	    // 	  ],
+	    // 	  group: "mapper"
+	    // 	},
+	    // 	{ key: "M90-sort-by-partition.dtl",
+	    // 	  fields: [
+	    // 	      {name: "infile4", info: "mapper-30.dat", color: "#FFB900", figure: "Diamond"},
+	    // 	      {name: "outfile4", info: "sorted-logs-by-partition.dat", color: "#F25022", figure: "Rectangle"}
+	    // 	  ],
+	    // 	  group: "mapper"
+	    // 	},
+	    // 	{ key: "R10-sessionize-weblogs.dtl",
+	    // 	  fields: [
+	    // 	      {name: "infile5", info: "sorted-logs-by-partition.dat", color: "#FFB900", figure: "Diamond"},
+	    // 	      {name: "outfile5", info: "sessionized-weblogs.dat", color: "#F25022", figure: "Rectangle"}
+	    // 	  ],
+	    // 	  group: "reducer"
+	    // 	}
+	    // ],
+            // linkDataArray: [
+	    // 	// { from: "M10-read-weblogs.dtl", fromPort: "infile1", to: "M20-pre-sessionize.dtl", toPort: "infile2" },
+	    // 	{ from: "M10-read-weblogs.dtl", fromPort: "outfile1", to: "M20-pre-sessionize.dtl", toPort: "fieldD" },
+	    // 	{from: "M20-pre-sessionize.dtl", fromPort: "outfile2", to: "M30-combiner.dtl", toPort: "infile3" },
+	    // 	{from: "M30-combiner.dtl", fromPort: "outfile3", to: "M90-sort-by-partition.dtl", toPort: "infile4" },
+	    // 	{from: "M90-sort-by-partition.dtl", fromPort: "outfile4", to: "R10-sessionize-weblogs.dtl", toPort: "infile5" }
 
-		// { from: "M10-read-weblogs.dtl", fromPort: "fieldThree", to: "M20-pre-sessionize.dtl", toPort: "outfile2" }
-            ]
+	    // 	// { from: "M10-read-weblogs.dtl", fromPort: "fieldThree", to: "M20-pre-sessionize.dtl", toPort: "outfile2" }
+            // ]
           });
 
     // automatically update the model that is shown on this page
