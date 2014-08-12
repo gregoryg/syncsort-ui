@@ -5,11 +5,23 @@
   <!-- Copyright 1998-2014 by Northwoods Software Corporation. -->
   <script src="../js/jquery-1.11.1.js"></script>
   <script src="../js/go.js"></script>
-  <link href="../css/goSamples.css" rel="stylesheet" type="text/css" />  <!-- you don't need to use this -->
-  <script src="../js/goSamples.js"></script>  <!-- this is only for the GoJS Samples framework -->
   <script id="code">
+jQuery(document).ready( function () {
+    jQuery('#dtl-jobs a').click( function(e) {
+	console.log(e.target.attributes.path);
+	jQuery.ajaxSetup({ async: false});
+	jQuery.getJSON("http://lemoncheeks:3000/dtl/setpath/" + encodeURIComponent(e.target.attributes.path.value), "",
+		       function (data, str) {
+			   ;
+		       }
+		      );
+	jQuery.ajaxSetup({ async: true});
+	return true;
+    });
+			      });
+
+
 function init() {
-    if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
     var $ = go.GraphObject.make;  // for conciseness in defining templates
 
     myDiagram =
@@ -82,8 +94,11 @@ function init() {
 
     myDiagram.linkTemplate =
         $(go.Link,
-          { relinkableFrom: true, relinkableTo: true, toShortLength: 4 },  // let user reconnect links
-          $(go.Shape, { strokeWidth: 1.5 }),
+          { routing: go.Link.AvoidsNodes, corner: 10},
+	  { relinkableFrom: true, relinkableTo: false },  // do not let user reconnect links
+	  $(go.Shape),
+          $(go.Shape, { toArrow: "Standard", strokeWidth: 4 },
+	  new go.Binding("stroke", "color")),
           $(go.Shape, { toArrow: "Standard", stroke: null })
          );
 
@@ -106,7 +121,7 @@ function init() {
           { linkFromPortIdProperty: "fromPort",
             linkToPortIdProperty: "toPort",
 	    nodeDataArray: nodeDataArray,
-	    linkDataArray: linkDataArray,
+	    linkDataArray: linkDataArray
             // nodeDataArray: [
 	    // 	{ key: "mapper", text: "mapper logic", color: "blue", isGroup: true},
 	    // 	{ key: "reducer", text: "reducer logic", color: "red", isGroup: true},
@@ -162,6 +177,50 @@ function init() {
             // ]
           });
 
+	function groupInfo(adornment) {  // takes the tooltip, not a group node data object
+	    var g = adornment.adornedPart;  // get the Group that the tooltip adorns
+	    var mems = g.memberParts.count;
+	    var links = 0;
+	    g.memberParts.each(function(part) {
+		if (part instanceof go.Link) links++;
+	    });
+	    return "Group " + g.data.key + ": " + g.data.text + "\n" + mems + " members including " + links + " links";
+	}
+
+
+	// Groups consist of a title in the color given by the group node data
+	// above a translucent gray rectangle surrounding the member parts
+	myDiagram.groupTemplate =
+	    $(go.Group, "Vertical",
+              { selectionObjectName: "PANEL",  // selection handle goes around shape, not label
+		ungroupable: true },  // enable Ctrl-Shift-G to ungroup a selected Group
+              $(go.TextBlock,
+		{
+		    font: "bold 12pt sans-serif",
+		    isMultiline: false,  // don't allow newlines in text
+		    editable: true  // allow in-place editing by user
+		},
+		new go.Binding("text", "text").makeTwoWay(),
+		new go.Binding("stroke", "color")),
+              $(go.Panel, "Auto",
+		{ name: "PANEL" },
+		$(go.Shape, "Rectangle",  // the rectangular shape around the members
+		  { fill: "rgba(128,128,128,0.2)", stroke: "gray", strokeWidth: 3 }),
+		$(go.Placeholder, { padding: 5 })  // represents where the members are
+               ),
+              { // this tooltip Adornment is shared by all groups
+		  toolTip:
+		  $(go.Adornment, "Auto",
+		    $(go.Shape, { fill: "#FFFFCC" }),
+		    $(go.TextBlock, { margin: 4 },
+                      // bind to tooltip, not to Group.data, to allow access to Group properties
+                      new go.Binding("text", "", groupInfo).ofObject())
+		   ),
+		  // the same context menu Adornment is shared by all groups
+		  // contextMenu: partContextMenu
+              }
+	     );
+
     // automatically update the model that is shown on this page
     myDiagram.model.addChangedListener(function(e) {
         if (e.isTransactionFinished) showModel();
@@ -176,13 +235,22 @@ function init() {
   </script>
 </head>
 <body onload="init()">
+<div id="dtl-jobs">
+    <ul>
+    <li><a href="" path="/work/syncsort-dtl/dtl-projects/UCA/FileCDC/MRJ_FileCDC.dtl">UCA File-based CDC</a></li>
+    <li><a href="" path="/work/syncsort-dtl/dtl-projects/join/cdc-job.dtl">Reducer-side join</a></li>
+    <li><a href="" path="/work/syncsort-dtl/dtl-projects/mailing-list/one-grand-job.dtl">Non-mapreduce mailing list job</a></li>
+    <li><a href="" path="/work/syncsort-dtl/dtl-projects/sessionize-weblogs/sessionize-weblogs-job.dtl">Sessionize Apache weblogs</a></li>
+    <li><a href="" path="/work/syncsort-dtl/dtl-projects/JSONLogs/MRJ_JSONLogs.dtl">JSON Logs enrichment</a></li>
+    </ul>
+</div>
 <div id="sample">
-  <h3>Mapping Fields of Records</h3>
-  <p>This shows a variable number of "fields" for each "record".</p>
+  <h3>Ironcluster/DMX-h MapReduce</h3>
+  <p>Targets link to sources in the following task where defined in the DTL</p>
   <p>Draw new links by dragging from the background of any field.
      Reconnect a selected link by dragging its diamond-shaped handle.
      The "record" Nodes are not movable or copyable or deletable.</p>
-  <div id="myDiagram" style="border: solid 1px black; width:100%; height:300px"></div>
+  <div id="myDiagram" style="border: solid 1px black; width:100%; height:500px"></div>
   <p>The model data, automatically updated after each change or undo or redo:</p>
   <textarea id="mySavedModel" style="width:100%;height:300px" />
 </div>
