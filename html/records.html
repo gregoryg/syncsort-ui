@@ -1,16 +1,16 @@
 <!doctype html>
 <html>
-<head>
-  <title>Mapping Fields of Records</title>
-  <!-- Copyright 1998-2014 by Northwoods Software Corporation. -->
-  <script src="../js/jquery-1.11.1.js"></script>
-  <script src="../js/go.js"></script>
-  <script id="code">
+  <head>
+    <title>Mapping Fields of Records</title>
+    <script src="../js/jquery-1.11.1.js"></script>
+    <script src="../js/go.js"></script>
+    <!-- <script src="syncsort-dtl-records.js"</script> -->
+<script id="code">
 jQuery(document).ready( function () {
     jQuery('#dtl-jobs a').click( function(e) {
 	console.log(e.target.attributes.path);
 	jQuery.ajaxSetup({ async: false});
-	jQuery.getJSON("http://lemoncheeks:3000/dtl/setpath/" + encodeURIComponent(e.target.attributes.path.value), "",
+	jQuery.getJSON("http://localhost:3000/dtl/setpath/" + encodeURIComponent(e.target.attributes.path.value), "",
 		       function (data, str) {
 			   ;
 		       }
@@ -18,131 +18,131 @@ jQuery(document).ready( function () {
 	jQuery.ajaxSetup({ async: true});
 	return true;
     });
-			      });
+});
 
 
 function init() {
     var $ = go.GraphObject.make;  // for conciseness in defining templates
 
     myDiagram =
-        $(go.Diagram, "myDiagram",
-          {
-              initialContentAlignment: go.Spot.Center,
-              validCycle: go.Diagram.CycleNotDirected,
-              "undoManager.isEnabled": true
-          });  // don't allow loops
+	$(go.Diagram, "myDiagram",
+	  {
+	      initialContentAlignment: go.Spot.Center,
+	      validCycle: go.Diagram.CycleNotDirected,
+	      "undoManager.isEnabled": true
+	  });  // don't allow loops
 
     // This template is a Panel that is used to represent each item in a Panel.itemArray.
     // The Panel is data bound to the item object.
     var fieldTemplate =
-            $(go.Panel, "TableRow",  // this Panel is a row in the containing Table
-              new go.Binding("portId", "name"),  // this Panel is a "port"
-              { background: "transparent",  // so this port's background can be picked by the mouse
+	    $(go.Panel, "TableRow",  // this Panel is a row in the containing Table
+	      new go.Binding("portId", "name"),  // this Panel is a "port"
+	      { background: "transparent",  // so this port's background can be picked by the mouse
 		fromSpot: go.Spot.Right,  // links only go from the right side to the left side
 		toSpot: go.Spot.Left,
 		fromLinkable: true, toLinkable: true },  // allow drawing links from or to this port
-              $(go.Shape,
+	      $(go.Shape,
 		{ width: 12, height: 12, column: 0, strokeWidth: 2, margin: 4,
 		  fromLinkable: false, toLinkable: false },
 		new go.Binding("figure", "figure"),
 		new go.Binding("fill", "color")),
-              $(go.TextBlock,
+	      $(go.TextBlock,
 		{ margin: new go.Margin(0, 2), column: 1, font: "bold 13px sans-serif",
 		  fromLinkable: false, toLinkable: false },
 		new go.Binding("text", "nameGORT")),
-              $(go.TextBlock,
+	      $(go.TextBlock,
 		{ margin: new go.Margin(0, 2), column: 2, font: "13px sans-serif",
 		  fromLinkable: false, toLinkable: false },
 		new go.Binding("text", "info"))
-             );
+	     );
 
     // This template represents a whole "record".
     myDiagram.nodeTemplate =
-        $(go.Node, "Auto",
-          { movable: true,
-            copyable: false,
-            deletable: false },
-          new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-          // this rectangular shape surrounds the content of the node
-          $(go.Shape,
-            { fill: "#EEEEEE" }),
-          // the content consists of a header and a list of items
-          $(go.Panel, "Vertical",
-            // this is the header for the whole node
-            $(go.Panel, "Auto",
-              { stretch: go.GraphObject.Horizontal },  // as wide as the whole node
-              $(go.Shape,
-                { fill: "#1570A6", stroke: null }),
-              $(go.TextBlock,
-                { alignment: go.Spot.Center,
-                  margin: 3,
-                  stroke: "white",
-                  textAlign: "center",
-                  font: "bold 12pt sans-serif" },
-                new go.Binding("text", "key"))),
-            // this Panel holds a Panel for each item object in the itemArray;
-            // each item Panel is defined by the itemTemplate to be a TableRow in this Table
-            $(go.Panel, "Table",
-              { padding: 2,
-                minSize: new go.Size(100, 10),
-                defaultStretch: go.GraphObject.Horizontal,
-                itemTemplate: fieldTemplate },
-              new go.Binding("itemArray", "fields")
-             )  // end Table Panel of items
-           )  // end Vertical Panel
-         );  // end Node
+	$(go.Node, "Auto",
+	  { movable: true,
+	    copyable: false,
+	    deletable: false },
+	  new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+	  // this rectangular shape surrounds the content of the node
+	  $(go.Shape,
+	    { fill: "#EEEEEE" }),
+	  // the content consists of a header and a list of items
+	  $(go.Panel, "Vertical",
+	    // this is the header for the whole node
+	    $(go.Panel, "Auto",
+	      { stretch: go.GraphObject.Horizontal },  // as wide as the whole node
+	      $(go.Shape,
+		{ fill: "#1570A6", stroke: null }),
+	      $(go.TextBlock,
+		{ alignment: go.Spot.Center,
+		  margin: 3,
+		  stroke: "white",
+		  textAlign: "center",
+		  font: "bold 12pt sans-serif" },
+		new go.Binding("text", "key"))),
+	    // this Panel holds a Panel for each item object in the itemArray;
+	    // each item Panel is defined by the itemTemplate to be a TableRow in this Table
+	    $(go.Panel, "Table",
+	      { padding: 2,
+		minSize: new go.Size(100, 10),
+		defaultStretch: go.GraphObject.Horizontal,
+		itemTemplate: fieldTemplate },
+	      new go.Binding("itemArray", "fields")
+	     )  // end Table Panel of items
+	   )  // end Vertical Panel
+	 );  // end Node
 
     myDiagram.linkTemplate =
-        $(go.Link,
-          { routing: go.Link.AvoidsNodes, corner: 10},
+	$(go.Link,
+	  { routing: go.Link.AvoidsNodes, corner: 10},
 	  { relinkableFrom: true, relinkableTo: false },  // do not let user reconnect links
 	  $(go.Shape),
-          $(go.Shape, { toArrow: "Standard", strokeWidth: 4 },
-	  new go.Binding("stroke", "color")),
-          $(go.Shape, { toArrow: "Standard", stroke: null })
-         );
+	  $(go.Shape, { toArrow: "Standard", strokeWidth: 4 },
+	    new go.Binding("stroke", "color")),
+	  $(go.Shape, { toArrow: "Standard", stroke: null })
+	 );
 
     var nodeDataArray, linkDataArray;
-	jQuery.ajaxSetup({ async: false});
-	jQuery.getJSON("http://lemoncheeks:3000/dtl/node-data-array", "",
-		       function (data, str) {
-			   nodeDataArray = data;
-		       }
-		      );
-	jQuery.getJSON("http://lemoncheeks:3000/dtl/link-data-array", "",
-		       function (data, str) {
-			   linkDataArray = data;
-		       }
-		      );
-	jQuery.ajaxSetup({ async: true});
+    jQuery.ajaxSetup({ async: false});
+    jQuery.getJSON("http://localhost:3000/dtl/node-data-array", "",
+		   function (data, str) {
+		       nodeDataArray = data;
+		   }
+		  );
+    jQuery.getJSON("http://localhost:3000/dtl/link-data-array", "",
+		   function (data, str) {
+		       linkDataArray = data;
+		   }
+		  );
+    jQuery.ajaxSetup({ async: true});
 
     myDiagram.model =
-        $(go.GraphLinksModel,
-          { linkFromPortIdProperty: "fromPort",
-            linkToPortIdProperty: "toPort",
+	$(go.GraphLinksModel,
+	  { linkFromPortIdProperty: "fromPort",
+	    linkToPortIdProperty: "toPort",
 	    nodeDataArray: nodeDataArray,
 	    linkDataArray: linkDataArray
-            // nodeDataArray: [
+	    // nodeDataArray: [
 	    // 	{ key: "mapper", text: "mapper logic", color: "blue", isGroup: true},
 	    // 	{ key: "reducer", text: "reducer logic", color: "red", isGroup: true},
 	    // 	{ key: "M10-read-weblogs.dtl",
-            //       fields: [
-            //           { name: "infile1", info: "SAMPLE-access_1.log", color: "#F7B84B", figure: "Ellipse" },
-            //           { name: "outfile1", info: "sorted-logs.dat", color: "#F25022", figure: "Ellipse" },
-            //           // { name: "fieldThree", info: "3rd", color: "#00BCF2" }
+	    //       fields: [
+	    //           { name: "infile1", info: "SAMPLE-access_1.log", color: "#F7B84B", figure: "Ellipse" },
+	    //           { name: "outfile1", info: "sorted-logs.dat", color: "#F25022", figure: "Ellipse" },
+	    //           // { name: "fieldThree", info: "3rd", color: "#00BCF2" }
 	    // 	  ],
 	    // 	  group: "mapper"
-            //       // loc: "0 0"
+	    //       // loc: "0 0"
 	    // 	},
 	    // 	{ key: "M20-pre-sessionize.dtl",
-            //       fields: [
-            //           { name: "infile2", info: "sorted-logs.dat",       color: "#FFB900", figure: "Diamond" },
-            //           { name: "outfile2", info: "mapper-20-out.dat",       color: "#F25022", figure: "Rectangle" }
-            //           // { name: "fieldC", info: "",       color: "#7FBA00", figure: "Diamond" },
-            //           // { name: "fieldD", info: "fourth", color: "#00BCF2",  figure: "Rectangle" }
-            //       ],
+	    //       fields: [
+	    //           { name: "infile2", info: "sorted-logs.dat",       color: "#FFB900", figure: "Diamond" },
+	    //           { name: "outfile2", info: "mapper-20-out.dat",       color: "#F25022", figure: "Rectangle" }
+	    //           // { name: "fieldC", info: "",       color: "#7FBA00", figure: "Diamond" },
+	    //           // { name: "fieldD", info: "fourth", color: "#00BCF2",  figure: "Rectangle" }
+	    //       ],
 	    // 	  group: "mapper"
-            //       // loc: "250 0"
+	    //       // loc: "250 0"
 	    // 	},
 	    // 	{ key: "M30-combiner.dtl",
 	    // 	  fields: [
@@ -166,7 +166,7 @@ function init() {
 	    // 	  group: "reducer"
 	    // 	}
 	    // ],
-            // linkDataArray: [
+	    // linkDataArray: [
 	    // 	// { from: "M10-read-weblogs.dtl", fromPort: "infile1", to: "M20-pre-sessionize.dtl", toPort: "infile2" },
 	    // 	{ from: "M10-read-weblogs.dtl", fromPort: "outfile1", to: "M20-pre-sessionize.dtl", toPort: "fieldD" },
 	    // 	{from: "M20-pre-sessionize.dtl", fromPort: "outfile2", to: "M30-combiner.dtl", toPort: "infile3" },
@@ -174,85 +174,95 @@ function init() {
 	    // 	{from: "M90-sort-by-partition.dtl", fromPort: "outfile4", to: "R10-sessionize-weblogs.dtl", toPort: "infile5" }
 
 	    // 	// { from: "M10-read-weblogs.dtl", fromPort: "fieldThree", to: "M20-pre-sessionize.dtl", toPort: "outfile2" }
-            // ]
-          });
+	    // ]
+	  });
 
-	function groupInfo(adornment) {  // takes the tooltip, not a group node data object
-	    var g = adornment.adornedPart;  // get the Group that the tooltip adorns
-	    var mems = g.memberParts.count;
-	    var links = 0;
-	    g.memberParts.each(function(part) {
-		if (part instanceof go.Link) links++;
-	    });
-	    return "Group " + g.data.key + ": " + g.data.text + "\n" + mems + " members including " + links + " links";
-	}
+    function groupInfo(adornment) {  // takes the tooltip, not a group node data object
+	var g = adornment.adornedPart;  // get the Group that the tooltip adorns
+	var mems = g.memberParts.count;
+	var links = 0;
+	g.memberParts.each(function(part) {
+	    if (part instanceof go.Link) links++;
+	});
+	return "Group " + g.data.key + ": " + g.data.text + "\n" + mems + " members including " + links + " links";
+    }
 
 
-	// Groups consist of a title in the color given by the group node data
-	// above a translucent gray rectangle surrounding the member parts
-	myDiagram.groupTemplate =
-	    $(go.Group, "Vertical",
-              { selectionObjectName: "PANEL",  // selection handle goes around shape, not label
-		ungroupable: true },  // enable Ctrl-Shift-G to ungroup a selected Group
-              $(go.TextBlock,
-		{
-		    font: "bold 12pt sans-serif",
-		    isMultiline: false,  // don't allow newlines in text
-		    editable: true  // allow in-place editing by user
-		},
-		new go.Binding("text", "text").makeTwoWay(),
-		new go.Binding("stroke", "color")),
-              $(go.Panel, "Auto",
-		{ name: "PANEL" },
-		$(go.Shape, "Rectangle",  // the rectangular shape around the members
-		  { fill: "rgba(128,128,128,0.2)", stroke: "gray", strokeWidth: 3 }),
-		$(go.Placeholder, { padding: 5 })  // represents where the members are
-               ),
-              { // this tooltip Adornment is shared by all groups
-		  toolTip:
-		  $(go.Adornment, "Auto",
-		    $(go.Shape, { fill: "#FFFFCC" }),
-		    $(go.TextBlock, { margin: 4 },
-                      // bind to tooltip, not to Group.data, to allow access to Group properties
-                      new go.Binding("text", "", groupInfo).ofObject())
-		   ),
-		  // the same context menu Adornment is shared by all groups
-		  // contextMenu: partContextMenu
-              }
-	     );
+    // Groups consist of a title in the color given by the group node data
+    // above a translucent gray rectangle surrounding the member parts
+    myDiagram.groupTemplate =
+	$(go.Group, "Vertical",
+	  { selectionObjectName: "PANEL",  // selection handle goes around shape, not label
+	    ungroupable: true },  // enable Ctrl-Shift-G to ungroup a selected Group
+	  $(go.TextBlock,
+	    {
+		font: "bold 12pt sans-serif",
+		isMultiline: false,  // don't allow newlines in text
+		editable: true  // allow in-place editing by user
+	    },
+	    new go.Binding("text", "text").makeTwoWay(),
+	    new go.Binding("stroke", "color")),
+	  $(go.Panel, "Auto",
+	    { name: "PANEL" },
+	    $(go.Shape, "Rectangle",  // the rectangular shape around the members
+	      { fill: "rgba(128,128,128,0.2)", stroke: "gray", strokeWidth: 3 }),
+	    $(go.Placeholder, { padding: 5 })  // represents where the members are
+	   ),
+	  { // this tooltip Adornment is shared by all groups
+	      toolTip:
+	      $(go.Adornment, "Auto",
+		$(go.Shape, { fill: "#FFFFCC" }),
+		$(go.TextBlock, { margin: 4 },
+		  // bind to tooltip, not to Group.data, to allow access to Group properties
+		  new go.Binding("text", "", groupInfo).ofObject())
+	       ),
+	      // the same context menu Adornment is shared by all groups
+	      // contextMenu: partContextMenu
+	  }
+	 );
 
     // automatically update the model that is shown on this page
     myDiagram.model.addChangedListener(function(e) {
-        if (e.isTransactionFinished) showModel();
+	if (e.isTransactionFinished) showModel();
     });
 
     showModel();  // show the diagram's initial model
 
     function showModel() {
-        document.getElementById("mySavedModel").textContent = myDiagram.model.toJson();
+	document.getElementById("mySavedModel").textContent = myDiagram.model.toJson();
     }
 }
-  </script>
-</head>
-<body onload="init()">
-<div id="dtl-jobs">
-    <ul>
-    <li><a href="" path="/work/syncsort-dtl/dtl-projects/UCA/FileCDC/MRJ_FileCDC.dtl">UCA File-based CDC</a></li>
-    <li><a href="" path="/work/syncsort-dtl/dtl-projects/join/cdc-job.dtl">Reducer-side join</a></li>
-    <li><a href="" path="/work/syncsort-dtl/dtl-projects/mailing-list/one-grand-job.dtl">Non-mapreduce mailing list job</a></li>
-    <li><a href="" path="/work/syncsort-dtl/dtl-projects/sessionize-weblogs/sessionize-weblogs-job.dtl">Sessionize Apache weblogs</a></li>
-    <li><a href="" path="/work/syncsort-dtl/dtl-projects/JSONLogs/MRJ_JSONLogs.dtl">JSON Logs enrichment</a></li>
-    </ul>
-</div>
-<div id="sample">
-  <h3>Ironcluster/DMX-h MapReduce</h3>
-  <p>Targets link to sources in the following task where defined in the DTL</p>
-  <p>Draw new links by dragging from the background of any field.
-     Reconnect a selected link by dragging its diamond-shaped handle.
-     The "record" Nodes are not movable or copyable or deletable.</p>
-  <div id="myDiagram" style="border: solid 1px black; width:100%; height:500px"></div>
-  <p>The model data, automatically updated after each change or undo or redo:</p>
-  <textarea id="mySavedModel" style="width:100%;height:300px" />
-</div>
-</body>
+</script>	    
+  </head>
+  <body onload="init()">
+    <div id="gort">
+      <h3>TODO</h3>
+      <ul>
+	<li>Greg's list: ensure first source is DFS</li>
+	<li>Greg's list: advise final mapper task to sort on EN field as primary sort</li>
+	<li>Greg's list: ensure only one intial mapper/reducer task and only one final mapper/reducer task</li>
+	<li>Browse file in task</li>
+	<li>Browse database table in task</li>
+      </ul>
+    </div>
+    <div id="dtl-jobs">
+      <ul>
+	<li><a href="" path="/work/syncsort-dtl/dtl-projects/UCA/FileCDC/MRJ_FileCDC.dtl">UCA File-based CDC</a></li>
+	<li><a href="" path="/work/syncsort-dtl/dtl-projects/join/cdc-job.dtl">Reducer-side join</a></li>
+	<li><a href="" path="/work/syncsort-dtl/dtl-projects/mailing-list/one-grand-job.dtl">Non-mapreduce mailing list job</a></li>
+	<li><a href="" path="/work/syncsort-dtl/dtl-projects/sessionize-weblogs/sessionize-weblogs-job.dtl">Sessionize Apache weblogs</a></li>
+	<li><a href="" path="/work/syncsort-dtl/dtl-projects/JSONLogs/MRJ_JSONLogs.dtl">JSON Logs enrichment</a></li>
+      </ul>
+    </div>
+    <div id="sample">
+      <h3>Ironcluster/DMX-h MapReduce</h3>
+      <p>Targets link to sources in the following task where defined in the DTL</p>
+      <p>Draw new links by dragging from the background of any field.
+	Reconnect a selected link by dragging its diamond-shaped handle.
+	The "record" Nodes are not movable or copyable or deletable.</p>
+      <div id="myDiagram" style="border: solid 1px black; width:100%; height:500px"></div>
+      <p>The model data, automatically updated after each change or undo or redo:</p>
+      <textarea id="mySavedModel" style="width:100%;height:300px" />
+    </div>
+  </body>
 </html>
